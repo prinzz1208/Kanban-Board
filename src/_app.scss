@@ -1,11 +1,11 @@
 .app {
 }
 
-.container {
+.column {
   margin: 8px;
   border: 1px solid lightgrey;
   border-radius: 2px;
-  font-size: 2rem;
+  width: 220px;
 
   display: flex;
   flex-direction: column;
@@ -17,19 +17,20 @@
 
 .task-list {
   padding: 8px;
-  height: 25rem;
   transition: background-color 0.2s ease;
-
+  background-color: white;
+  flex-grow: 1;
+  min-height: 100px;
   &.active {
-    background-color: grey;
+    background-color: skyblue;
   }
 }
 
 .task {
   border: 1px solid lightgrey;
+  border-radius: 2px;
   padding: 8px;
   margin-bottom: 8px;
-  border-radius: 2px;
   background-color: white;
 
   &.active {
@@ -39,6 +40,5 @@
 
 .board {
   display: flex;
-  justify-content: space-between;
   border-radius: 2px;
 }
