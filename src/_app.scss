@@ -1,0 +1,44 @@
+.app {
+}
+
+.container {
+  margin: 8px;
+  border: 1px solid lightgrey;
+  border-radius: 2px;
+  font-size: 2rem;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  padding: 8px;
+}
+
+.task-list {
+  padding: 8px;
+  height: 25rem;
+  transition: background-color 0.2s ease;
+
+  &.active {
+    background-color: grey;
+  }
+}
+
+.task {
+  border: 1px solid lightgrey;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 2px;
+  background-color: white;
+
+  &.active {
+    background-color: lightgreen;
+  }
+}
+
+.board {
+  display: flex;
+  justify-content: space-between;
+  border-radius: 2px;
+}

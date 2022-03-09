@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  app:
+    container_name: app-dev
+    image: app-dev
+    build: ./
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - 3000:3000
+    command: 'npm run dev'
+
+  storybook:
+    container_name: storybook
+    image: app-dev-storybook
+    build: ./
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    command: 'npm run storybook'
+    ports:
+      - 6006:6006
