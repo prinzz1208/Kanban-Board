@@ -32,7 +32,7 @@
 
 html {
   box-sizing: border-box;
-  font-size: 62.5%;
+  // font-size: 62.5%;
   @include response(phone) {
     font-size: 55%;
   }

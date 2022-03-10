@@ -19,6 +19,37 @@ export const App = () => {
   const [DocId, setDocId] = useState("");
   const db = useRef(getFirestoreInstance());
   const collRef = useRef<CollectionReference<DocumentData>>();
+
+  useEffect(() => {
+    collRef.current = collection(getFirestoreInstance(), "init");
+
+    if (collRef.current) {
+      // addDoc(collRef.current, initialData).then((doc) => {
+      //   console.log("Document written with ID: ", doc.id);
+      //   // setDocId(doc.id);
+      // });
+      getDocs(collRef.current).then((docs) => {
+        docs.forEach((doc) => {
+          const initData = doc.data();
+          if (initData && initData.id === 1) {
+            setDocId(doc.id);
+            setData(initData as any);
+          }
+        });
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (data && collRef.current && DocId) {
+      console.log("setDoc");
+
+      setDoc(doc(collRef.current, DocId), data).then((doc) => {
+        console.log(doc);
+      });
+    }
+  }, [data]);
+
   const onDragEnd = (result) => {
     // TODO: reorder our column
 
@@ -85,43 +116,25 @@ export const App = () => {
     setData(newState);
   };
 
-  useEffect(() => {
-    collRef.current = collection(getFirestoreInstance(), "init");
-
-    if (collRef.current) {
-      // addDoc(collRef.current, initialData).then((doc) => {
-      //   console.log("Document written with ID: ", doc.id);
-      //   // setDocId(doc.id);
-      // });
-      getDocs(collRef.current).then((docs) => {
-        docs.forEach((doc) => {
-          const initData = doc.data();
-          if (initData && initData.id === 1) {
-            setDocId(doc.id);
-            setData(initData as any);
-          }
-        });
-      });
+  const onDeleteTask = (columnId, taskId) => {
+    {
+      const newData = { ...data };
+      newData.columns[columnId].taskIds = newData.columns[
+        columnId
+      ].taskIds.filter((id) => id !== taskId);
+      delete newData.tasks[taskId];
+      setData(newData);
     }
-  }, []);
-
-  useEffect(() => {
-    if (data && collRef.current && DocId) {
-      console.log("setDoc");
-
-      setDoc(doc(collRef.current, DocId), data).then((doc) => {
-        console.log(doc);
-      });
-    }
-  }, [data]);
-
+  };
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="board">
         {data.columnOrder.map((columnId) => {
           const column = data.columns[columnId];
           const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
-          return <Column column={column} tasks={tasks} />;
+          return (
+            <Column column={column} tasks={tasks} onDeleteTask={onDeleteTask} />
+          );
         })}
       </div>
     </DragDropContext>

@@ -32,9 +32,20 @@
   padding: 8px;
   margin-bottom: 8px;
   background-color: white;
-
+  display: flex;
+  i {
+    margin-left: auto;
+    cursor: pointer;
+  }
   &.active {
     background-color: lightgreen;
+  }
+
+  &.add-task {
+    i {
+      margin: 0;
+    }
+    @include flex-center;
   }
 }
 

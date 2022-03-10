@@ -2,7 +2,7 @@ import React from "react";
 import { Task } from "./task";
 import { Droppable } from "react-beautiful-dnd";
 
-export const Column = ({ column, tasks }) => (
+export const Column = ({ column, tasks, onDeleteTask }) => (
   <div className="column">
     <div className="title">{column.title}</div>
     <Droppable droppableId={column.id}>
@@ -13,9 +13,18 @@ export const Column = ({ column, tasks }) => (
           {...provided.droppableProps}
         >
           {tasks.map((task, index) => (
-            <Task key={task.id} task={task} index={index} />
+            <Task
+              key={task.id}
+              task={task}
+              index={index}
+              onDeleteTask={onDeleteTask}
+              columnId={column.id}
+            />
           ))}
           {provided.placeholder}
+          <div className="task add-task">
+            <i className="bi bi-plus"></i>
+          </div>
         </div>
       )}
     </Droppable>
