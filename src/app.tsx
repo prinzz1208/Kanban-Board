@@ -1,11 +1,24 @@
 import "./assets/scss/main.scss";
-import React, { useState } from "react";
-import { intialData } from "./constants";
+import React, { useEffect, useRef, useState } from "react";
+import { initialData, initialData2 } from "./constants";
 import { Column } from "./column";
 import { DragDropContext } from "react-beautiful-dnd";
+import { getFirestoreInstance, initializeFirestore } from "./db";
+import {
+  addDoc,
+  collection,
+  CollectionReference,
+  doc,
+  DocumentData,
+  getDocs,
+  setDoc,
+} from "firebase/firestore";
 
 export const App = () => {
-  const [data, setData] = useState(intialData);
+  const [data, setData] = useState(initialData2);
+  const [DocId, setDocId] = useState("");
+  const db = useRef(getFirestoreInstance());
+  const collRef = useRef<CollectionReference<DocumentData>>();
   const onDragEnd = (result) => {
     // TODO: reorder our column
 
@@ -71,6 +84,37 @@ export const App = () => {
 
     setData(newState);
   };
+
+  useEffect(() => {
+    collRef.current = collection(getFirestoreInstance(), "init");
+
+    if (collRef.current) {
+      // addDoc(collRef.current, initialData).then((doc) => {
+      //   console.log("Document written with ID: ", doc.id);
+      //   // setDocId(doc.id);
+      // });
+      getDocs(collRef.current).then((docs) => {
+        docs.forEach((doc) => {
+          const initData = doc.data();
+          if (initData && initData.id === 1) {
+            setDocId(doc.id);
+            setData(initData as any);
+          }
+        });
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (data && collRef.current && DocId) {
+      console.log("setDoc");
+
+      setDoc(doc(collRef.current, DocId), data).then((doc) => {
+        console.log(doc);
+      });
+    }
+  }, [data]);
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="board">
