@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { initialData, initialData2 } from "./constants";
 import { Column } from "./column";
 import { DragDropContext } from "react-beautiful-dnd";
-import { getFirestoreInstance, initializeFirestore } from "./db";
+import { getFirestoreInstance, initializeFirebase } from "./db";
 import {
   addDoc,
   collection,
@@ -13,30 +13,24 @@ import {
   getDocs,
   setDoc,
 } from "firebase/firestore";
+import { LoginModal } from "./components/login-modal";
+import { User } from "firebase/auth";
+import { generateUUID } from "./helpers";
 
 export const App = () => {
   const [data, setData] = useState(initialData2);
   const [DocId, setDocId] = useState("");
   const db = useRef(getFirestoreInstance());
   const collRef = useRef<CollectionReference<DocumentData>>();
+  const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {
-    collRef.current = collection(getFirestoreInstance(), "init");
+    collRef.current = collection(getFirestoreInstance(), "board");
 
-    if (collRef.current) {
-      // addDoc(collRef.current, initialData).then((doc) => {
-      //   console.log("Document written with ID: ", doc.id);
-      //   // setDocId(doc.id);
-      // });
-      getDocs(collRef.current).then((docs) => {
-        docs.forEach((doc) => {
-          const initData = doc.data();
-          if (initData && initData.id === 1) {
-            setDocId(doc.id);
-            setData(initData as any);
-          }
-        });
-      });
+    if (!localStorage.getItem("userId")) {
+      setShowLogin(true);
+    } else {
+      onUserLogin({ uid: localStorage.getItem("userId")?.toString() });
     }
   }, []);
 
@@ -51,8 +45,6 @@ export const App = () => {
   }, [data]);
 
   const onDragEnd = (result) => {
-    // TODO: reorder our column
-
     const { destination, source, draggableId } = result;
     if (!destination) {
       return;
@@ -126,17 +118,67 @@ export const App = () => {
       setData(newData);
     }
   };
+
+  const onUserLogin = (user: Partial<User>) => {
+    if (collRef.current) {
+      getDocs(collRef.current).then((docs) => {
+        docs.forEach((doc) => {
+          const initData = doc.data();
+          if (initData && user.uid && initData.id === user.uid) {
+            setDocId(user.uid);
+            setData(initData as any);
+            localStorage.setItem("userId", user.uid);
+          }
+        });
+      });
+    }
+    setShowLogin(false);
+  };
+
+  const onSignupUser = (user: User) => {
+    if (collRef.current) {
+      const dataToSet = { ...initialData2 };
+      dataToSet.id = user.uid;
+      addDoc(collRef.current, dataToSet).then((doc) => {
+        console.log("Document written with ID: ", doc.id);
+        setDocId(doc.id);
+      });
+    }
+    setShowLogin(false);
+  };
+
+  const onAddNewTask = (text: string, columnId) => {
+    const newData = { ...data };
+    const uuid = generateUUID();
+    const task = { id: uuid, content: text };
+    newData.tasks[uuid] = task;
+    newData.columns[columnId].taskIds.push(uuid);
+
+    setData(newData);
+  };
+
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div className="board">
-        {data.columnOrder.map((columnId) => {
-          const column = data.columns[columnId];
-          const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
-          return (
-            <Column column={column} tasks={tasks} onDeleteTask={onDeleteTask} />
-          );
-        })}
-      </div>
-    </DragDropContext>
+    <>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="board">
+          {data.columnOrder.map((columnId, key) => {
+            const column = data.columns[columnId];
+            const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
+            return (
+              <Column
+                key={`${columnId} + ${key}`}
+                column={column}
+                tasks={tasks}
+                onDeleteTask={onDeleteTask}
+                onAddNewTask={onAddNewTask}
+              />
+            );
+          })}
+        </div>
+      </DragDropContext>
+      {showLogin && (
+        <LoginModal onUserLogin={onUserLogin} onSignupUser={onSignupUser} />
+      )}
+    </>
   );
 };

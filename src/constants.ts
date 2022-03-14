@@ -1,5 +1,5 @@
 export const initialData = {
-  id: 1,
+  id: "1",
   tasks: {
     "task-1": { id: "task-1", content: "Take out the garbage" },
     "task-2": { id: "task-2", content: "Watch my favorite show" },
@@ -27,7 +27,7 @@ export const initialData = {
   columnOrder: ["column-1", "column-2", "column-3"],
 };
 export const initialData2 = {
-  id: 1,
+  id: "1",
   tasks: {},
 
   columns: {
